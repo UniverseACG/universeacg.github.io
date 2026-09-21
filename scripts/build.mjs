@@ -5,7 +5,7 @@ import path from "node:path";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const out = path.join(root, "dist");
 const { sites, updatedAt } = JSON.parse(await readFile(path.join(root, "src/sites.json"), "utf8"));
-const entries = [["main", "主站"], ["entry2", "入口2"], ["entry3", "入口3"], ["cdn", "备用入口"]];
+const entries = [["main", "主站"], ["entry2", "备用 1"], ["entry3", "备用 2"], ["cdn", "备用 3"], ["cdnAlias", "备用 4"]];
 const base = new URL(process.env.PUBLIC_SITE_URL || "https://universeacg.github.io/");
 if (!base.pathname.endsWith("/")) base.pathname += "/";
 if (base.protocol !== "https:" || base.username || base.password || base.search || base.hash) throw new Error("PUBLIC_SITE_URL must be a public HTTPS URL");
