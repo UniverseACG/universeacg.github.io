@@ -17,6 +17,12 @@ test('all four pages preserve static links, expose named domains, and constrain 
       assert.ok(html.includes(`href="${site.main}"`));
       assert.ok(html.includes(`data-product="${site.id}"`));
       assert.ok(html.includes(`data-default`));
+      assert.ok(html.includes(`href="https://paradox.uacg.moe/official-apk/UACG-${site.id}.apk"`));
+      assert.ok(html.includes('PWA 网页应用'));
+      assert.ok(html.includes('Android APK'));
+      assert.ok(html.includes('添加到主屏幕'));
+      assert.doesNotMatch(html, /\.ipa["?]|\.exe["?]|\.aab["?]|shipsecure\.cc/);
+
       for (const route of site.routes) {
         assert.ok(html.includes(`href="${route.url}"`));
         assert.ok(html.includes(route.label));

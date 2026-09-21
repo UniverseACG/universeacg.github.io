@@ -77,3 +77,10 @@ footer a { display: inline-flex; align-items: center; min-height: 44px; }
 .route-status, .route-note { margin: 8px 12px; color: var(--muted); font-size: 12px; }
 .route-note { font-size: 11px; }
 .probe-result { flex-shrink: 0; font-size: 11px; color: var(--muted); }
+
+.app-downloads { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.app-downloads h3 { margin: 0 12px 8px; font-size: 14px; }
+.app-downloads details { margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; }
+.app-downloads summary { min-height: 44px; padding: 12px; cursor: pointer; font-size: 13px; }
+.app-downloads summary:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+.app-downloads p { margin: 8px 12px; font-size: 12px; color: var(--muted); }

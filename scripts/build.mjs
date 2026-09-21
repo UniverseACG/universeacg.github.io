@@ -30,7 +30,14 @@ function group(site) {
 <a data-default href="${esc(site.main)}" class="entry primary" target="_blank" rel="noopener noreferrer"><span class="entry-title"><span data-visit-label>访问${esc(site.label)} · 主站</span><small data-visit-domain>${esc(new URL(site.main).hostname)}</small></span>${arrow}<span class="sr-only">（在新窗口打开）</span></a>
 <p class="route-status" data-status role="status" aria-live="polite">可直接访问任意入口；启用 JavaScript 后自动选择本次测速最快的线路。</p>
 <ul>${routes.map(route => `<li class="route-row"><a href="${esc(route.url)}" data-route="${route.id}" data-label="${esc(route.label)}" class="entry" target="_blank" rel="noopener noreferrer"><span class="entry-title">${esc(route.label)}<small>${esc(new URL(route.url).hostname)}</small></span><span class="probe-result" data-result="${route.id}"></span>${arrow}<span class="sr-only">（在新窗口打开）</span></a><button type="button" data-select="${route.id}" hidden aria-label="将${esc(route.label)}设为默认入口" aria-pressed="false">选用</button></li>`).join("")}</ul>
-<p class="route-note">线路名称仅作区分；测速由当前浏览器下载同一小文件完成，不代表运营商识别。结果仅在本页使用。</p></section>`;
+<p class="route-note">线路名称仅作区分；测速由当前浏览器下载同一小文件完成，不代表运营商识别。结果仅在本页使用。</p>
+<div class="app-downloads" aria-label="${esc(site.name)} 应用下载"><h3>下载 App</h3>
+${external("https://paradox.uacg.moe/official-apk/UACG-" + site.id + ".apk", "下载 Android APK · 官方版", "entry primary")}
+<details><summary>PWA 网页应用 · 安装到桌面</summary>
+<p>在系统浏览器打开${esc(site.label)}站，选择浏览器菜单中的“安装应用”或“添加到主屏幕”；iPhone / iPad 可从分享菜单添加。</p>
+${external(site.main, "打开" + esc(site.label) + "站安装 PWA", "entry")}
+<p class="route-note">PWA 无需 APK，安装后仍需要网络。也可进入上方测速推荐的线路，再从侧栏“下载 App”安装。</p>
+</details></div></section>`;
 }
 function render(site) {
   const prefix = site ? "../" : "./";

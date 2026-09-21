@@ -53,3 +53,7 @@ procedure. Do not commit `dist/` or `.wrangler/`. Source assets are copied to
 verification files. CSP is included in HTML (GitHub Pages) and `_headers`
 (Cloudflare Pages), permitting same-origin scripts and only the 15 exact probe
 origins. `_headers` additionally denies framing.
+
+## App downloads
+
+Each product page and the combined home expose only PWA installation guidance and the corresponding official Android APK. APK links use the fixed public R2 path `https://paradox.uacg.moe/official-apk/UACG-{video,game,ai}.apk`; they do not require GitLab login. The release procedure verifies the signed CI artifact hash and embedded official/production metadata, uploads an immutable version under `official-apk/releases/<revision>/`, then updates the fixed file (five-minute cache). Keep previous immutable versions for rollback. PWA installation takes place on the business site, never on this address directory itself.
