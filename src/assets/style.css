@@ -84,3 +84,8 @@ footer a { display: inline-flex; align-items: center; min-height: 44px; }
 .app-downloads summary { min-height: 44px; padding: 12px; cursor: pointer; font-size: 13px; }
 .app-downloads summary:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
 .app-downloads p { margin: 8px 12px; font-size: 12px; color: var(--muted); }
+
+.download-qr { display: none; margin: 16px 0; text-align: center; }
+.download-qr img { display: block; margin: 0 auto; border-radius: 12px; background: #fff; }
+.download-qr figcaption { margin-top: 8px; color: var(--muted); font-size: 12px; }
+@media (min-width: 768px) { .download-qr { display: block; } }

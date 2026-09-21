@@ -18,6 +18,8 @@ test('all four pages preserve static links, expose named domains, and constrain 
       assert.ok(html.includes(`data-product="${site.id}"`));
       assert.ok(html.includes(`data-default`));
       assert.ok(html.includes(`href="https://paradox.uacg.moe/official-apk/UACG-${site.id}.apk"`));
+      assert.ok(html.includes('https://api.qrserver.com/v1/create-qr-code/'));
+      assert.ok(html.includes(encodeURIComponent(`https://paradox.uacg.moe/official-apk/UACG-${site.id}.apk`)));
       assert.ok(html.includes('PWA 网页应用'));
       assert.ok(html.includes('Android APK'));
       assert.ok(html.includes('添加到主屏幕'));

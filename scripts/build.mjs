@@ -7,7 +7,7 @@ const out = path.join(root, "dist");
 const { sites, updatedAt } = JSON.parse(await readFile(path.join(root, "src/sites.json"), "utf8"));
 const routeIds = ['telecom', 'mobile', 'unicom', 'cloudfront', 'cloudfront-alias'];
 const origins = sites.flatMap(site => site.routes.map(route => route.url));
-const csp = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src ${origins.join(' ')}; object-src 'none'; base-uri 'none'`;
+const csp = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://api.qrserver.com; connect-src ${origins.join(' ')}; object-src 'none'; base-uri 'none'`;
 const base = new URL(process.env.PUBLIC_SITE_URL || "https://universeacg.github.io/");
 if (!base.pathname.endsWith("/")) base.pathname += "/";
 if (base.protocol !== "https:" || base.username || base.password || base.search || base.hash) throw new Error("PUBLIC_SITE_URL must be a public HTTPS URL");
@@ -33,6 +33,7 @@ function group(site) {
 <p class="route-note">线路名称仅作区分；测速由当前浏览器下载同一小文件完成，不代表运营商识别。结果仅在本页使用。</p>
 <div class="app-downloads" aria-label="${esc(site.name)} 应用下载"><h3>下载 App</h3>
 ${external("https://paradox.uacg.moe/official-apk/UACG-" + site.id + ".apk", "下载 Android APK · 官方版", "entry primary")}
+<figure class="download-qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=176x176&amp;format=svg&amp;ecc=M&amp;qzone=4&amp;data=${encodeURIComponent("https://paradox.uacg.moe/official-apk/UACG-" + site.id + ".apk")}" alt="${esc(site.name)} ${esc(site.label)} Android APK 下载二维码" width="176" height="176" loading="lazy" referrerpolicy="no-referrer"><figcaption>用手机扫码下载 ${esc(site.name)} ${esc(site.label)} Android APK</figcaption></figure>
 <details><summary>PWA 网页应用 · 安装到桌面</summary>
 <p>在系统浏览器打开${esc(site.label)}站，选择浏览器菜单中的“安装应用”或“添加到主屏幕”；iPhone / iPad 可从分享菜单添加。</p>
 ${external(site.main, "打开" + esc(site.label) + "站安装 PWA", "entry")}

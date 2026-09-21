@@ -57,3 +57,5 @@ origins. `_headers` additionally denies framing.
 ## App downloads
 
 Each product page and the combined home expose only PWA installation guidance and the corresponding official Android APK. APK links use the fixed public R2 path `https://paradox.uacg.moe/official-apk/UACG-{video,game,ai}.apk`; they do not require GitLab login. The release procedure verifies the signed CI artifact hash and embedded official/production metadata, uploads an immutable version under `official-apk/releases/<revision>/`, then updates the fixed file (five-minute cache). Keep previous immutable versions for rollback. PWA installation takes place on the business site, never on this address directory itself.
+
+电脑端展示三个产品对应的 Android APK 二维码，使用 https://api.qrserver.com 的线上服务，编码内容与固定官方下载链接一致。二维码无法加载时仍可使用下载按钮。
