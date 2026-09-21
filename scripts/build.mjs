@@ -1,11 +1,13 @@
-import { readFile, writeFile, mkdir, rm, cp } from "node:fs/promises";
+import { readFile, writeFile, mkdir, cp } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const out = path.join(root, "dist");
 const { sites, updatedAt } = JSON.parse(await readFile(path.join(root, "src/sites.json"), "utf8"));
-const entries = [["main", "主站"], ["entry2", "备用 1"], ["entry3", "备用 2"], ["cdn", "备用 3"], ["cdnAlias", "备用 4"]];
+const routeIds = ['telecom', 'mobile', 'unicom', 'cloudfront', 'cloudfront-alias'];
+const origins = sites.flatMap(site => site.routes.map(route => route.url));
+const csp = `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src ${origins.join(' ')}; object-src 'none'; base-uri 'none'`;
 const base = new URL(process.env.PUBLIC_SITE_URL || "https://universeacg.github.io/");
 if (!base.pathname.endsWith("/")) base.pathname += "/";
 if (base.protocol !== "https:" || base.username || base.password || base.search || base.hash) throw new Error("PUBLIC_SITE_URL must be a public HTTPS URL");
@@ -13,15 +15,22 @@ const esc = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp
 if (sites.length !== 3 || new Set(sites.map((site) => site.id)).size !== 3) throw new Error("Expected three distinct products");
 for (const site of sites) {
   if (!/^(game|ai|video)$/.test(site.id)) throw new Error("Unknown product");
-  for (const [key] of entries) {
-    const url = new URL(site[key]);
+  if (JSON.stringify(site.routes.map(route => route.id)) !== JSON.stringify(routeIds)) throw new Error("Expected five fixed routes");
+  for (const entry of [site.main, ...site.routes.map(route => route.url)]) {
+    const url = new URL(entry);
     if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || url.pathname !== "/") throw new Error("Invalid site entry");
   }
 }
 const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7"/></svg>';
 const external = (url, label, cls = "") => `<a href="${esc(url)}" class="${cls}" target="_blank" rel="noopener noreferrer">${label}<span class="sr-only">（在新窗口打开）</span></a>`;
 function group(site) {
-  return `<section aria-labelledby="title-${site.id}" class="product"><h2 id="title-${site.id}">${esc(site.name)}<span>${esc(site.label)}</span></h2><ul>${entries.map(([key, label]) => `<li>${external(site[key], `<span class="entry-title">${label}</span>${arrow}`, `entry${key === "main" ? " primary" : ""}`)}</li>`).join("")}</ul></section>`;
+  const routes = [{ id: 'main', label: '主站', url: site.main }, ...site.routes];
+  return `<section data-product="${site.id}" data-label="${esc(site.label)}" aria-labelledby="title-${site.id}" class="product">
+<h2 id="title-${site.id}">${esc(site.name)}<span>${esc(site.label)}</span></h2>
+<a data-default href="${esc(site.main)}" class="entry primary" target="_blank" rel="noopener noreferrer"><span class="entry-title"><span data-visit-label>访问${esc(site.label)} · 主站</span><small data-visit-domain>${esc(new URL(site.main).hostname)}</small></span>${arrow}<span class="sr-only">（在新窗口打开）</span></a>
+<p class="route-status" data-status role="status" aria-live="polite">可直接访问任意入口；启用 JavaScript 后自动选择本次测速最快的线路。</p>
+<ul>${routes.map(route => `<li class="route-row"><a href="${esc(route.url)}" data-route="${route.id}" data-label="${esc(route.label)}" class="entry" target="_blank" rel="noopener noreferrer"><span class="entry-title">${esc(route.label)}<small>${esc(new URL(route.url).hostname)}</small></span><span class="probe-result" data-result="${route.id}"></span>${arrow}<span class="sr-only">（在新窗口打开）</span></a><button type="button" data-select="${route.id}" hidden aria-label="将${esc(route.label)}设为默认入口" aria-pressed="false">选用</button></li>`).join("")}</ul>
+<p class="route-note">线路名称仅作区分；测速由当前浏览器下载同一小文件完成，不代表运营商识别。结果仅在本页使用。</p></section>`;
 }
 function render(site) {
   const prefix = site ? "../" : "./";
@@ -32,6 +41,7 @@ function render(site) {
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="google-site-verification" content="YaAspV9E1niy2bfqfDJ4NW_gZcO2cXubI6m06mN0ZCU">
 <meta name="msvalidate.01" content="6DBD7C19D09CD7EB475B6F0A082B5A91">
 <meta name="yandex-verification" content="0cc74f539be8b917">
@@ -56,6 +66,7 @@ function render(site) {
 <meta property="og:image" content="${esc(new URL("assets/icon-512.png", base))}">
 <link rel="icon" href="${prefix}assets/uacg-logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="${prefix}assets/style.css">
+<script type="module" src="${prefix}assets/routes.mjs"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">跳到访问入口</a>
@@ -67,7 +78,7 @@ function render(site) {
 </body>
 </html>`;
 }
-await rm(out, { recursive: true, force: true });
+// Preserve existing generated/verification files; overwrite the files owned by this build.
 await mkdir(path.join(out, "assets"), { recursive: true });
 await cp(path.join(root, "src/assets"), path.join(out, "assets"), { recursive: true });
 await writeFile(path.join(out, "index.html"), render());
@@ -78,8 +89,8 @@ for (const site of sites) {
 await writeFile(path.join(out, ".nojekyll"), "");
 await writeFile(path.join(out, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${new URL("sitemap.xml", base)}\n`);
 await writeFile(path.join(out, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${["", ...sites.map((site) => `${site.id}/`)].map((route) => `<url><loc>${esc(new URL(route, base))}</loc><lastmod>${updatedAt}</lastmod></url>`).join("")}</urlset>`);
-await writeFile(path.join(out, "_headers"), "/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n  Content-Security-Policy: default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'\n  Cache-Control: public, max-age=0, must-revalidate\n");
-console.log(`Built ${sites.length + 1} UACG address pages with ${sites.length * entries.length} business entry URLs.`);
+await writeFile(path.join(out, "_headers"), `/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n  Content-Security-Policy: ${csp}; frame-ancestors 'none'\n  Cache-Control: public, max-age=0, must-revalidate\n`);
+console.log(`Built ${sites.length + 1} UACG address pages with ${sites.reduce((count, site) => count + site.routes.length + 1, 0)} business entry URLs.`);
 
 await cp(path.join(root, "src/verification"), out, { recursive: true });
 const indexNowKey = process.env.INDEXNOW_KEY?.trim();
